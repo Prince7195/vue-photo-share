@@ -1,3 +1,11 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const createToken = (user, secret, expiresIn) => {
+  const { username, email } = user;
+  return jwt.sign({ username, email }, secret, { expiresIn });
+};
+
 module.exports = {
   Query: {
     getPosts: async (_, args, context) => {
@@ -8,6 +16,18 @@ module.exports = {
       });
       return posts;
     },
+    getCurrentUser: async (_, args, { User, currentUser }) => {
+      if (!currentUser) {
+        return null;
+      }
+      const user = await User.findOne({
+        username: currentUser.username,
+      }).populate({
+        path: "favorites",
+        model: "Post",
+      });
+      return user;
+    },
   },
   Mutation: {
     signupUser: async (_, { username, email, password }, context) => {
@@ -17,8 +37,20 @@ module.exports = {
         throw new Error("User already exist");
       } else {
         const newUser = await new User({ username, email, password }).save();
-        return newUser;
+        return { token: createToken(newUser, process.env.SECRET, "1hr") };
       }
+    },
+    signinUser: async (_, { username, password }, context) => {
+      const { User } = context;
+      const user = await User.findOne({ username });
+      if (!user) {
+        throw new Error("User not found");
+      }
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        throw new Error("Invalid Password");
+      }
+      return { token: createToken(user, process.env.SECRET, "1hr") };
     },
     addPost: async (
       _,

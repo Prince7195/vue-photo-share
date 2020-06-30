@@ -1,9 +1,8 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { gql } from "apollo-boost";
 
 import { defaultClient as apolloClient } from "../main";
-import { GET_POSTS } from "./queries";
+import { GET_POSTS, SIGNIN_USER, GET_CURRENT_USER } from "./queries";
 
 Vue.use(Vuex);
 
@@ -21,6 +20,23 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    getCurrentUser: ({ commit }) => {
+      commit("setLoading", true);
+      apolloClient
+        .query({
+          query: GET_CURRENT_USER,
+        })
+        .then(({ data, loading }) => {
+          if (!loading) {
+            commit("setLoading", false);
+            console.log(data.getCurrentUser);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          commit("setLoading", false);
+        });
+    },
     getPosts: ({ commit }) => {
       commit("setLoading", true);
       // use ApolloClient to fire getPosts query
@@ -38,6 +54,21 @@ export default new Vuex.Store({
         .catch((err) => {
           console.error(err);
           commit("setLoading", false);
+        });
+    },
+    signinUser: ({ commit }, payload) => {
+      apolloClient
+        .mutate({
+          mutation: SIGNIN_USER,
+          variables: payload,
+        })
+        .then(({ data, loading }) => {
+          if (!loading) {
+            localStorage.setItem("token", data.signinUser.token);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
         });
     },
   },

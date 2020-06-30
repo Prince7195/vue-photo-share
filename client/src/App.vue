@@ -97,7 +97,7 @@
       </v-toolbar-items>
     </v-app-bar>
     <!-- App Content -->
-    <v-main app>
+    <v-main>
       <v-container>
         <transition name="fade">
           <router-view />
