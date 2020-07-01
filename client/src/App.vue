@@ -43,6 +43,20 @@
             {{item.title}}
           </v-list-item-content>
         </v-list-item>
+
+        <!-- Signout button -->
+        <v-list-item
+          class="ml-5 pl-5"
+          v-if="user"
+          @click="handleSignoutUser"
+        >
+          <v-list-item-action>
+            <v-icon>exit_to_app</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            Signout
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -94,6 +108,37 @@
           >{{item.icon}}</v-icon>
           {{item.title}}
         </v-btn>
+
+        <!-- Profile button -->
+        <v-btn
+          text
+          to="/profile"
+          v-if="user"
+        >
+          <v-icon
+            class="hidden-sm-only"
+            left
+          >account_box</v-icon>
+          <v-badge
+            content="1"
+            color="green"
+          >
+            Profile
+          </v-badge>
+        </v-btn>
+
+        <!-- Signout button -->
+        <v-btn
+          text
+          v-if="user"
+          @click="handleSignoutUser"
+        >
+          <v-icon
+            class="hidden-sm-only"
+            left
+          >exit_to_app</v-icon>
+          Signout
+        </v-btn>
       </v-toolbar-items>
     </v-app-bar>
     <!-- App Content -->
@@ -111,6 +156,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
   name: "App",
   data() {
@@ -119,12 +165,16 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(["user"]),
     horizontalNavItems() {
       let items = [
         { icon: "chat", title: "Posts", link: "/posts" },
         { icon: "lock_open", title: "Sign In", link: "/signin" },
         { icon: "create", title: "Sign Up", link: "/signup" }
       ];
+      if (this.user) {
+        items = [{ icon: "chat", title: "Posts", link: "/posts" }];
+      }
       return items;
     },
     sideNavItems() {
@@ -133,12 +183,22 @@ export default {
         { icon: "lock_open", title: "Sign In", link: "/signin" },
         { icon: "create", title: "Sign Up", link: "/signup" }
       ];
+      if (this.user) {
+        items = [
+          { icon: "chat", title: "Posts", link: "/posts" },
+          { icon: "stars", title: "Create Post", link: "/post/add" },
+          { icon: "account_box", title: "Profile", link: "/profile" }
+        ];
+      }
       return items;
     }
   },
   methods: {
     toggleSideNav() {
       this.sideNav = !this.sideNav;
+    },
+    handleSignoutUser() {
+      this.$store.dispatch("signoutUser");
     }
   }
 };

@@ -4,6 +4,23 @@
     fluid
   >
 
+    <!-- Error on signin -->
+    <v-row
+      align="center"
+      justify="center"
+    >
+      <v-col
+        cols="12"
+        sm="10"
+        md="6"
+      >
+        <form-alert
+          v-if="error"
+          :message="error.message"
+        ></form-alert>
+      </v-col>
+    </v-row>
+
     <v-row
       align="center"
       justify="center"
@@ -41,7 +58,16 @@
               <v-btn
                 color="primary"
                 type="submit"
-              >SIGNIN</v-btn>
+                :loading="loading"
+                :disabled="loading"
+              >
+                SIGNIN
+                <template v-slot:loader>
+                  <span class="custom-loader">
+                    <v-icon light>cached</v-icon>
+                  </span>
+                </template>
+              </v-btn>
             </v-form>
           </v-card-text>
           <v-card-actions>
@@ -59,6 +85,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
   name: "Signin",
   data() {
@@ -66,6 +93,17 @@ export default {
       username: "",
       password: ""
     };
+  },
+  computed: {
+    ...mapGetters(["user", "error", "loading"])
+  },
+  watch: {
+    user(value) {
+      // if value changes from null to object, redirect to home page
+      if (value) {
+        this.$router.push("/");
+      }
+    }
   },
   methods: {
     handleSigninUser() {
@@ -77,3 +115,41 @@ export default {
   }
 };
 </script>
+<style>
+.custom-loader {
+  animation: loader 1s infinite;
+  display: flex;
+}
+@-moz-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>

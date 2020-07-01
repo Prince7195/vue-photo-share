@@ -1,6 +1,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+
 import Home from "../components/Home.vue";
+
+import AuthGuard from "./AuthGuard";
 
 import AddPost from "../components/Posts/AddPost.vue";
 import Posts from "../components/Posts/Posts.vue";
@@ -26,11 +29,13 @@ const routes = [
     path: "/post/add",
     name: "AddPost",
     component: AddPost,
+    beforeEnter: AuthGuard,
   },
   {
     path: "/profile",
     name: "Profile",
     component: Profile,
+    beforeEnter: AuthGuard,
   },
   {
     path: "/signin",

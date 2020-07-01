@@ -1,6 +1,8 @@
 import Vue from "vue";
 import Vuex from "vuex";
 
+import router from "../router";
+
 import { defaultClient as apolloClient } from "../main";
 import { GET_POSTS, SIGNIN_USER, GET_CURRENT_USER } from "./queries";
 
@@ -10,6 +12,8 @@ export default new Vuex.Store({
   state: {
     posts: [],
     loading: false,
+    user: null,
+    error: null,
   },
   mutations: {
     setPosts: (state, payload) => {
@@ -17,6 +21,18 @@ export default new Vuex.Store({
     },
     setLoading: (state, payload) => {
       state.loading = payload;
+    },
+    setUser: (state, payload) => {
+      state.user = payload;
+    },
+    clearUser: (state) => {
+      state.user = null;
+    },
+    setError: (state, payload) => {
+      state.error = payload;
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   actions: {
@@ -29,7 +45,7 @@ export default new Vuex.Store({
         .then(({ data, loading }) => {
           if (!loading) {
             commit("setLoading", false);
-            console.log(data.getCurrentUser);
+            commit("setUser", data.getCurrentUser);
           }
         })
         .catch((err) => {
@@ -57,6 +73,11 @@ export default new Vuex.Store({
         });
     },
     signinUser: ({ commit }, payload) => {
+      commit("setLoading", true);
+      // clear Error
+      commit("clearError");
+      // clear token to prevent errors (if malformed)
+      localStorage.setItem("token", "");
       apolloClient
         .mutate({
           mutation: SIGNIN_USER,
@@ -64,16 +85,33 @@ export default new Vuex.Store({
         })
         .then(({ data, loading }) => {
           if (!loading) {
+            commit("setLoading", false);
             localStorage.setItem("token", data.signinUser.token);
+            // to make sure created method is run in main.js (we run getCurrentUser), reload page
+            router.go();
           }
         })
         .catch((err) => {
+          commit("setError", err);
           console.error(err);
+          commit("setLoading", false);
         });
+    },
+    signoutUser: async ({ commit }) => {
+      // clear user state
+      commit("clearUser");
+      // remove token from localstorage
+      localStorage.setItem("token", "");
+      // end session
+      await apolloClient.resetStore();
+      // redirect to home - kicks user out of private pages(Ex,. Profile)
+      router.push("/");
     },
   },
   getters: {
     posts: (state) => state.posts,
     loading: (state) => state.loading,
+    user: (state) => state.user,
+    error: (state) => state.error,
   },
 });
