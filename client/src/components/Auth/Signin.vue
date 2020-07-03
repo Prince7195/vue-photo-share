@@ -39,8 +39,14 @@
             <v-toolbar-title class="text-center">Welcome Back!</v-toolbar-title>
           </v-toolbar>
           <v-card-text>
-            <v-form @submit.prevent="handleSigninUser">
+            <v-form
+              @submit.prevent="handleSigninUser"
+              lazy-validation
+              v-model="isFormValid"
+              ref="form"
+            >
               <v-text-field
+                :rules="usernameRules"
                 id="username"
                 label="Username"
                 v-model="username"
@@ -50,6 +56,7 @@
 
               <v-text-field
                 id="password"
+                :rules="passwordRules"
                 label="Password"
                 v-model="password"
                 prepend-icon="extension"
@@ -59,7 +66,7 @@
                 color="primary"
                 type="submit"
                 :loading="loading"
-                :disabled="loading"
+                :disabled="loading || !isFormValid"
               >
                 SIGNIN
                 <template v-slot:loader>
@@ -90,8 +97,23 @@ export default {
   name: "Signin",
   data() {
     return {
+      isFormValid: true,
       username: "",
-      password: ""
+      password: "",
+      usernameRules: [
+        // check for empty
+        username => !!username || "Username is required",
+        // make user name is less than 10 characters
+        username =>
+          username.length < 10 || "Username must be less than 10 characters"
+      ],
+      passwordRules: [
+        // check for empty
+        password => !!password || "Password is required",
+        // make sure password is atleast 5 characters
+        password =>
+          password.length >= 5 || "Password must be atleast 5 characters"
+      ]
     };
   },
   computed: {
@@ -107,10 +129,12 @@ export default {
   },
   methods: {
     handleSigninUser() {
-      this.$store.dispatch("signinUser", {
-        username: this.username,
-        password: this.password
-      });
+      if (this.$refs.form.validate()) {
+        this.$store.dispatch("signinUser", {
+          username: this.username,
+          password: this.password
+        });
+      }
     }
   }
 };

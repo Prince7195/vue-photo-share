@@ -147,6 +147,52 @@
         <transition name="fade">
           <router-view />
         </transition>
+
+        <!-- Auth Snackbar -->
+        <v-snackbar
+          v-model="authSnackbar"
+          color="success"
+          bottom
+          left
+          :timeout="5000"
+        >
+          <v-icon>check_circle</v-icon>
+          <h3 style="position: absolute;top: 16px;left: 51px;">You are now signed in!</h3>
+          <template v-slot:action="{ attrs }">
+            <v-btn
+              dark
+              text
+              v-bind="attrs"
+              @click="authSnackbar = false"
+            >
+              Close
+            </v-btn>
+          </template>
+        </v-snackbar>
+
+        <!-- Auth Error Snackbar -->
+        <v-snackbar
+          v-model="authErrorSnackbar"
+          v-if="authError"
+          color="error"
+          bottom
+          left
+          multi-line
+          :timeout="5000"
+        >
+          <v-icon>cancel</v-icon>
+          <h3 style="position: absolute;top: 16px;left: 60px;display: contents;">{{authError.message}}</h3>
+          <template v-slot:action="{ attrs }">
+            <v-btn
+              dark
+              text
+              v-bind="attrs"
+              to="/signin"
+            >
+              Signin
+            </v-btn>
+          </template>
+        </v-snackbar>
       </v-container>
     </v-main>
     <v-footer app>
@@ -161,11 +207,13 @@ export default {
   name: "App",
   data() {
     return {
-      sideNav: false
+      sideNav: false,
+      authSnackbar: false,
+      authErrorSnackbar: false
     };
   },
   computed: {
-    ...mapGetters(["user"]),
+    ...mapGetters(["user", "authError"]),
     horizontalNavItems() {
       let items = [
         { icon: "chat", title: "Posts", link: "/posts" },
@@ -191,6 +239,20 @@ export default {
         ];
       }
       return items;
+    }
+  },
+  watch: {
+    user(newValue, oldValue) {
+      // if we had no value for user before, show snackbar
+      if (oldValue === null) {
+        this.authSnackbar = true;
+      }
+    },
+    authError(value) {
+      // if auth error is not null, show auth error snackbar
+      if (value !== null) {
+        this.authErrorSnackbar = true;
+      }
     }
   },
   methods: {
