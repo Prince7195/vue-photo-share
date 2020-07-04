@@ -28,6 +28,35 @@ module.exports = {
       });
       return user;
     },
+    infiniteScrollPosts: async (_, { pageNum, pageSize }, { Post }) => {
+      let posts;
+      if (pageNum === 1) {
+        posts = await Post.find({})
+          .sort({ createdDate: "desc" })
+          .populate({
+            path: "createdBy",
+            model: "User",
+          })
+          .limit(pageSize);
+      } else {
+        // if page number is not 1, calculate howmany documents to skip
+        const skip = pageSize * (pageNum - 1);
+        posts = await Post.find({})
+          .sort({ createdDate: "desc" })
+          .populate({
+            path: "createdBy",
+            model: "User",
+          })
+          .skip(skip)
+          .limit(pageSize);
+      }
+      const totalCount = await Post.countDocuments();
+      const hasMore = totalCount > pageSize * pageNum;
+      return {
+        posts,
+        hasMore,
+      };
+    },
   },
   Mutation: {
     signupUser: async (_, { username, email, password }, context) => {
