@@ -140,6 +140,7 @@ export default {
           creatorId: this.user._id
         });
       }
+      this.$router.push("/");
     }
   }
 };
