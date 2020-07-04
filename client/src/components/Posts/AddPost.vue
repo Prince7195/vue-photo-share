@@ -100,6 +100,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
   name: "AddPost",
   data() {
@@ -124,6 +125,22 @@ export default {
           desc.length < 200 || "Description must have less than 200 characters"
       ]
     };
+  },
+  computed: {
+    ...mapGetters(["user", "loading"])
+  },
+  methods: {
+    handleAddPost() {
+      if (this.$refs.form.validate()) {
+        this.$store.dispatch("addPost", {
+          title: this.title,
+          imageUrl: this.imageUrl,
+          categories: this.categories,
+          description: this.description,
+          creatorId: this.user._id
+        });
+      }
+    }
   }
 };
 </script>
