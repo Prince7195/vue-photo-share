@@ -10,9 +10,10 @@
         v-for="post in infiniteScrollPosts.posts"
         :key="post._id"
       >
-        <v-card>
+        <v-card style="cursor:pointer">
           <v-img
             :src="post.imageUrl"
+            @click.native="goToPost(post._id)"
             height="300"
             class="white--text align-end"
             gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
@@ -50,7 +51,7 @@
 
               <v-list-item-content>
                 <v-list-item-title class="text--primary">{{post.createdBy.username}}</v-list-item-title>
-                <v-list-item-sub-title class="font-weight-thin">Added {{post.createdDate}}</v-list-item-sub-title>
+                <v-list-item-subtitle class="font-weight-thin">Added {{new Date(Number(post.createdDate))}}</v-list-item-subtitle>
               </v-list-item-content>
 
               <v-row
@@ -131,6 +132,9 @@ export default {
           };
         }
       });
+    },
+    goToPost(postId) {
+      this.$router.push(`/posts/${postId}`);
     }
   }
 };

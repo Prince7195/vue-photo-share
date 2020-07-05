@@ -29,9 +29,11 @@
         v-if="!loading && posts.length > 0"
       >
         <v-carousel-item
+          style="cursor:pointer"
           v-for="(post, i) in posts"
           :key="i"
           :src="post.imageUrl"
+          @click.native="goToPost(post._id)"
         >
           <h1 id="carousel__title">{{post.title}}</h1>
         </v-carousel-item>
@@ -51,6 +53,9 @@ export default {
     handleGetCarouselPosts() {
       // reach out to vuex store, fire action that gets post for carousel
       this.$store.dispatch("getPosts");
+    },
+    goToPost(postId) {
+      this.$router.push(`/posts/${postId}`);
     }
   },
   created() {
