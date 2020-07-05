@@ -72,7 +72,12 @@ module.exports = {
       if (user) {
         throw new Error("User already exist");
       } else {
-        const newUser = await new User({ username, email, password }).save();
+        const newUser = await new User({
+          username,
+          email,
+          password,
+          favorites: [],
+        }).save();
         return { token: createToken(newUser, process.env.SECRET, "1hr") };
       }
     },
@@ -120,6 +125,48 @@ module.exports = {
         model: "User",
       });
       return post.messages[0];
+    },
+    likePost: async (_, { postId, username }, { Post, User }) => {
+      // Find Post, add 1 to its 'like' value
+      const post = await Post.findOneAndUpdate(
+        { _id: postId },
+        { $inc: { likes: 1 } },
+        { new: true }
+      );
+      // Find User, add id of post to its favorites array (which will be populated as Posts)
+      const user = await User.findOneAndUpdate(
+        { username },
+        { $addToSet: { favorites: postId } },
+        { new: true }
+      ).populate({
+        path: "favorites",
+        model: "Post",
+      });
+      console.log(user.favorites);
+      // Return only likes from 'post' and favorites from 'user'
+      return { likes: post.likes, favorites: user.favorites };
+    },
+    unlikePost: async (_, { postId, username }, { Post, User }) => {
+      // Find Post and add -1 to its like value
+      const post = await Post.findOneAndUpdate(
+        { _id: postId },
+        { $inc: { likes: -1 } },
+        { new: true }
+      );
+      // Find User, remove id of post to its favorites array (which will be populated as Posts)
+      const user = await User.findOneAndUpdate(
+        { username },
+        { $pull: { favorites: postId } },
+        { new: true }
+      ).populate({
+        path: "favorites",
+        model: "Post",
+      });
+      // Return only likes from post and favorites from user
+      return {
+        likes: post.likes,
+        favorites: user.favorites,
+      };
     },
   },
 };

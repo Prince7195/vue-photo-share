@@ -29,7 +29,7 @@ const UserSchema = new Schema({
     default: Date.now,
   },
   favorites: {
-    type: Schema.Types.ObjectId,
+    type: [Schema.Types.ObjectId],
     ref: "Post",
   },
 });
