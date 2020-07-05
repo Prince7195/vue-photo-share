@@ -53,4 +53,5 @@ type Mutation {
     description: String!
     creatorId: ID!
   ): Post!
+  addPostMessage(messageBody: String!, userId: ID!, postId: ID!): Message
 }

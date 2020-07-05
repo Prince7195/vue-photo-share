@@ -75,14 +75,21 @@
       v-if="user"
     >
       <v-col cols="12">
-        <v-form>
+        <v-form
+          v-model="isFormValid"
+          lazy-validation
+          ref="form"
+          @submit.prevent="handleAddPostMessage"
+        >
           <v-text-field
-            solo
-            append-outer-icon="send"
+            :append-outer-icon="messageBody && 'send'"
             label="Add Message"
+            :rules="messageRules"
             clearable
+            v-model="messageBody"
             type="text"
             prepend-icon="email"
+            @click:append-outer="handleAddPostMessage"
             required
           ></v-text-field>
         </v-form>
@@ -107,7 +114,7 @@
               avatar
               :key="message.title"
             >
-              <v-list-item-avatar v-if="avatar">
+              <v-list-item-avatar>
                 <v-img :src="message.messageUser.avatar"></v-img>
               </v-list-item-avatar>
               <v-list-item-content>
@@ -115,12 +122,12 @@
                 <v-list-item-subtitle>
                   {{message.messageUser.username}}
                   <span class="grey--text text-lighten-1 hidden-xs-only">
-                    {{message.messageDate}}
+                    {{new Date(Number(message.messageDate))}}
                   </span>
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action class="hidden-xs-only">
-                <v-icon color="grey">chat_bubble</v-icon>
+                <v-icon :color="checkIfOwnMessage(message) ? 'accent' : 'grey'">chat_bubble</v-icon>
               </v-list-item-action>
             </v-list-item>
           </template>
@@ -131,14 +138,21 @@
 </template>
 
 <script>
-import { GET_POST } from "../../store/queries";
+import { GET_POST, ADD_POST_MESSAGE } from "../../store/queries";
 import { mapGetters } from "vuex";
 export default {
   name: "Post",
   props: ["postId"],
   data() {
     return {
-      dialog: false
+      dialog: false,
+      messageBody: "",
+      isFormValid: true,
+      messageRules: [
+        message => !!message || "Message is required",
+        message =>
+          message.length < 75 || "Message must be less than 75 characters"
+      ]
     };
   },
   apollo: {
@@ -161,6 +175,40 @@ export default {
     toggleImageDialog() {
       if (window.innerWidth > 500) {
         this.dialog = !this.dialog;
+      }
+    },
+    checkIfOwnMessage(message) {
+      return this.user && this.user._id === message.messageUser._id;
+    },
+    handleAddPostMessage() {
+      if (this.$refs.form.validate()) {
+        const variables = {
+          messageBody: this.messageBody,
+          userId: this.user._id,
+          postId: this.postId
+        };
+        this.$apollo
+          .mutate({
+            mutation: ADD_POST_MESSAGE,
+            variables,
+            update: (cache, { data: { addPostMessage } }) => {
+              const data = cache.readQuery({
+                query: GET_POST,
+                variables: { postId: this.postId }
+              });
+              data.getPost.messages.unshift(addPostMessage);
+              cache.writeQuery({
+                query: GET_POST,
+                variables: { postId: this.postId },
+                data
+              });
+            }
+          })
+          .then(({ data }) => {
+            this.$refs.form.reset();
+            console.log(data.addPostMessage);
+          })
+          .catch(err => console.error(err));
       }
     }
   }
