@@ -60,6 +60,7 @@ export default new Vuex.Store({
         })
         .catch((err) => {
           console.error(err);
+          router.push("/signin");
           commit("setLoading", false);
         });
     },
