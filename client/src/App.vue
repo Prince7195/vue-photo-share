@@ -120,8 +120,10 @@
             left
           >account_box</v-icon>
           <v-badge
-            content="1"
+            :content="userFavorites.length"
+            :value="userFavorites.length"
             color="green"
+            :class="{ 'bounce': bounceAnimated }"
           >
             Profile
           </v-badge>
@@ -209,11 +211,12 @@ export default {
     return {
       sideNav: false,
       authSnackbar: false,
-      authErrorSnackbar: false
+      authErrorSnackbar: false,
+      bounceAnimated: true
     };
   },
   computed: {
-    ...mapGetters(["user", "authError"]),
+    ...mapGetters(["user", "authError", "userFavorites"]),
     horizontalNavItems() {
       let items = [
         { icon: "chat", title: "Posts", link: "/posts" },
@@ -253,6 +256,14 @@ export default {
       if (value !== null) {
         this.authErrorSnackbar = true;
       }
+    },
+    userFavorites(value) {
+      if (value) {
+        this.bounceAnimated = true;
+        setTimeout(() => {
+          this.bounceAnimated = false;
+        }, 1000);
+      }
     }
   },
   methods: {
@@ -279,5 +290,33 @@ export default {
 .fade-enter,
 .fade-leave-active {
   opacity: 0;
+}
+
+/* User Favorite Animation */
+.bounce {
+  animation: bounce 1s both;
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  40%,
+  43% {
+    transform: translate3d(0, -20px, 0);
+  }
+
+  70% {
+    transform: translate3d(0, -10px, 0);
+  }
+
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
 }
 </style>
