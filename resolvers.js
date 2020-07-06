@@ -8,6 +8,18 @@ const createToken = (user, secret, expiresIn) => {
 
 module.exports = {
   Query: {
+    getCurrentUser: async (_, args, { User, currentUser }) => {
+      if (!currentUser) {
+        return null;
+      }
+      const user = await User.findOne({
+        username: currentUser.username,
+      }).populate({
+        path: "favorites",
+        model: "Post",
+      });
+      return user;
+    },
     getPosts: async (_, args, context) => {
       const { Post } = context;
       const posts = await Post.find({}).sort({ createdDate: "desc" }).populate({
@@ -22,18 +34,6 @@ module.exports = {
         model: "User",
       });
       return post;
-    },
-    getCurrentUser: async (_, args, { User, currentUser }) => {
-      if (!currentUser) {
-        return null;
-      }
-      const user = await User.findOne({
-        username: currentUser.username,
-      }).populate({
-        path: "favorites",
-        model: "Post",
-      });
-      return user;
     },
     infiniteScrollPosts: async (_, { pageNum, pageSize }, { Post }) => {
       let posts;
@@ -63,6 +63,20 @@ module.exports = {
         posts,
         hasMore,
       };
+    },
+    searchPosts: async (_, { searchTerm }, { Post }) => {
+      if (searchTerm) {
+        const searchResult = await Post.find(
+          // Performing text search
+          { $text: { $search: searchTerm } },
+          // Assign "searchTerm" a text to provide best match
+          { score: { $meta: "textScore" } }
+          // sort results according to textScore (as well as by likes in descending order)
+        )
+          .sort({ score: { $meta: "textScore" }, likes: "desc" })
+          .limit(5);
+        return searchResult;
+      }
     },
   },
   Mutation: {

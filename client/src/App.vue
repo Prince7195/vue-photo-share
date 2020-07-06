@@ -90,7 +90,35 @@
         color="accent"
         single-line
         hide-details
+        v-model="searchTerm"
+        @input="handleSearchPost"
       ></v-text-field>
+
+      <!-- Search Results Card -->
+      <v-card
+        dark
+        v-if="searchResults.length"
+        id="search__card"
+      >
+        <v-list>
+          <v-list-item
+            v-for="result in searchResults"
+            :key="result._id"
+            @click="goToSearchResult(result._id)"
+          >
+            <v-list-item-title>
+              {{result.title}} -
+              <span class="font-weight-thin ml-3">
+                {{formatDescription(result.description)}}
+              </span>
+            </v-list-item-title>
+            <!-- Show Icon is Favorited by user -->
+            <v-list-item-action v-if="checkIfUserFavorite(result._id)">
+              <v-icon>favorite</v-icon>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list>
+      </v-card>
 
       <v-spacer></v-spacer>
 
@@ -212,11 +240,18 @@ export default {
       sideNav: false,
       authSnackbar: false,
       authErrorSnackbar: false,
-      bounceAnimated: true
+      bounceAnimated: true,
+      searchTerm: ""
     };
   },
   computed: {
-    ...mapGetters(["user", "authError", "userFavorites"]),
+    ...mapGetters([
+      "user",
+      "authError",
+      "userFavorites",
+      "searchResults",
+      "userFavorites"
+    ]),
     horizontalNavItems() {
       let items = [
         { icon: "chat", title: "Posts", link: "/posts" },
@@ -272,6 +307,29 @@ export default {
     },
     handleSignoutUser() {
       this.$store.dispatch("signoutUser");
+    },
+    handleSearchPost() {
+      this.$store.dispatch("searchPosts", {
+        searchTerm: this.searchTerm
+      });
+    },
+    goToSearchResult(postId) {
+      // clear search term
+      this.searchTerm = "";
+      // Go to desired result
+      this.$router.push(`/posts/${postId}`);
+      // clear search result
+      this.$store.commit("clearSearchResults");
+    },
+    formatDescription(desc = "") {
+      return desc.length > 20 ? `${desc.slice(0, 20)}...` : desc;
+    },
+    checkIfUserFavorite(postId) {
+      // check if user favorites includes post with id of postId
+      return (
+        this.userFavorites &&
+        this.userFavorites.some(fave => fave._id === postId)
+      );
     }
   }
 };
@@ -290,6 +348,15 @@ export default {
 .fade-enter,
 .fade-leave-active {
   opacity: 0;
+}
+
+/* Search results card */
+#search__card {
+  position: absolute;
+  width: 100vw;
+  z-index: 8;
+  top: 100%;
+  left: 0%;
 }
 
 /* User Favorite Animation */
