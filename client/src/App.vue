@@ -22,7 +22,7 @@
           tag="span"
           style="cursor: pointer"
         >
-          <h1 class="title pl-3">VueShare</h1>
+          <h1 class="title pl-3">PhotoShare</h1>
         </router-link>
       </v-app-bar>
 
@@ -78,7 +78,7 @@
           to="/"
           tag="span"
           style="cursor: pointer"
-        >VueShare</router-link>
+        >PhotoShare</router-link>
       </v-toolbar-title>
 
       <v-spacer></v-spacer>

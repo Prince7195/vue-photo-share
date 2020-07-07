@@ -1,5 +1,5 @@
 {
-  "name": "vue-share",
+  "name": "photo-share",
   "version": "1.0.0",
   "description": "Pinterest clone application",
   "main": "server.js",

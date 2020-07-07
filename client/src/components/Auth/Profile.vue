@@ -159,6 +159,7 @@
                 small
                 dark
                 class="m-2"
+                @click="loadPost(post)"
               >
                 <v-icon>edit</v-icon>
               </v-btn>
@@ -168,6 +169,7 @@
                 fab
                 small
                 dark
+                @click="handleDeleteUserPost(post)"
                 class="m-2"
               >
                 <v-icon>delete</v-icon>
@@ -253,8 +255,8 @@
             type="submit"
             text
             class="success--text"
-            :loading="loading"
-            :disabled="loading || !isFormValid"
+            @click="handleupdateUserPost"
+            :disabled="!isFormValid"
           >
             Update
             <template v-slot:loader>
@@ -318,17 +320,37 @@ export default {
         userId: this.user._id
       });
     },
+    loadPost(post, editPostDialog = true) {
+      this.postId = post._id;
+      this.title = post.title;
+      this.imageUrl = post.imageUrl;
+      this.categories = post.categories;
+      this.description = post.description;
+      this.editPostDialog = editPostDialog;
+    },
     handleupdateUserPost() {
       if (this.$refs.form.validate()) {
         this.$store.dispatch("updateUserPost", {
+          postId: this.postId,
+          userId: this.user._id,
           title: this.title,
           imageUrl: this.imageUrl,
           categories: this.categories,
-          description: this.description,
-          creatorId: this.user._id
+          description: this.description
+        });
+        this.editPostDialog = false;
+      }
+    },
+    handleDeleteUserPost(post) {
+      this.loadPost(post, false);
+      const deletePost = window.confirm(
+        "Are you sure you want to delete this post?"
+      );
+      if (deletePost) {
+        this.$store.dispatch("deleteUserPost", {
+          postId: this.postId
         });
       }
-      this.$router.push("/");
     }
   },
   created() {
