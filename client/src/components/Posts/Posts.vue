@@ -51,7 +51,7 @@
 
               <v-list-item-content>
                 <v-list-item-title class="text--primary">{{post.createdBy.username}}</v-list-item-title>
-                <v-list-item-subtitle class="font-weight-thin">Added {{new Date(Number(post.createdDate))}}</v-list-item-subtitle>
+                <v-list-item-subtitle class="font-weight-regular">Added {{formatDate(post.createdDate)}}</v-list-item-subtitle>
               </v-list-item-content>
 
               <v-row
@@ -87,6 +87,7 @@
 </template>
 
 <script>
+import moment from "moment";
 import { INFINITE_SCROLL_POSTS } from "../../store/queries";
 const pageSize = 2;
 export default {
@@ -94,9 +95,13 @@ export default {
   data() {
     return {
       pageNum: 1,
-      showMoreEnabled: true,
       showPostCreator: false
     };
+  },
+  computed: {
+    showMoreEnabled() {
+      return this.infiniteScrollPosts && this.infiniteScrollPosts.hasMore;
+    }
   },
   apollo: {
     infiniteScrollPosts: {
@@ -108,6 +113,9 @@ export default {
     }
   },
   methods: {
+    formatDate(time) {
+      return moment(new Date(+time)).format("lll");
+    },
     showMorePosts() {
       // fetch more data and transform original result
       this.pageNum += 1;

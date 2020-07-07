@@ -1,7 +1,7 @@
 {
   "name": "photo-share",
   "version": "1.0.0",
-  "description": "Pinterest clone application",
+  "description": "Pinterest clone sample application",
   "main": "server.js",
   "scripts": {
     "server": "nodemon server.js",

@@ -29,7 +29,7 @@
 
               <v-card-subtitle>
                 <div class="font-weight-regular white--text">
-                  Joined {{new Date(Number(user.joinDate))}}
+                  Joined {{formatDate(user.joinDate)}}
                 </div>
                 <div class="hidden-xs-only font-weight-regular white--text">
                   {{user.favorites.length}} Favorites
@@ -282,6 +282,7 @@
 
 <script>
 import { mapGetters } from "vuex";
+import moment from "moment";
 export default {
   name: "Profile",
   data() {
@@ -312,6 +313,9 @@ export default {
     ...mapGetters(["user", "userFavorites", "userPosts", "loading"])
   },
   methods: {
+    formatDate(time) {
+      return moment(new Date(+time)).format("lll");
+    },
     goToPost(postId) {
       this.$router.push(`/posts/${postId}`);
     },
