@@ -178,6 +178,103 @@
       </v-row>
     </v-container>
 
+    <!-- Edit Post dialog -->
+    <v-dialog
+      v-model="editPostDialog"
+      persistent
+      max-width="600px"
+    >
+      <v-card>
+        <v-card-title>
+          <span class="headline">User Profile</span>
+        </v-card-title>
+        <v-card-text>
+          <v-form
+            @submit.prevent="handleupdateUserPost"
+            lazy-validation
+            v-model="isFormValid"
+            ref="form"
+          >
+            <!-- Post title -->
+            <v-text-field
+              :rules="titleRules"
+              id="title"
+              label="Post Title"
+              v-model="title"
+              type="text"
+            ></v-text-field>
+
+            <!-- Image Url link -->
+            <v-text-field
+              :rules="imageRules"
+              id="image"
+              label="Image Url"
+              v-model="imageUrl"
+              type="text"
+            ></v-text-field>
+
+            <!-- Image Preview -->
+            <v-row
+              justify="space-around"
+              v-if="imageUrl"
+            >
+              <v-col>
+                <v-img
+                  :src="imageUrl"
+                  height="300"
+                ></v-img>
+              </v-col>
+            </v-row>
+
+            <!-- Categories Select -->
+            <v-select
+              v-model="categories"
+              :rules="categoriesRules"
+              :items="['Art', 'Education', 'Food', 'Furniture', 'Travel', 'Photography', 'Technology']"
+              multiple
+              label="Categories"
+            ></v-select>
+
+            <!-- Description Text Area -->
+            <v-textarea
+              :rules="descRules"
+              v-model="description"
+              label="Description"
+              type="text"
+              required
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="info"
+            type="submit"
+            text
+            class="success--text"
+            :loading="loading"
+            :disabled="loading || !isFormValid"
+          >
+            Update
+            <template v-slot:loader>
+              <span class="custom-loader">
+                <v-icon light>cached</v-icon>
+              </span>
+            </template>
+          </v-btn>
+          <v-btn
+            color="error"
+            text
+            class="error--text"
+            @click="editPostDialog = false"
+          >
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </v-container>
 </template>
 
@@ -185,8 +282,32 @@
 import { mapGetters } from "vuex";
 export default {
   name: "Profile",
+  data() {
+    return {
+      editPostDialog: false,
+      isFormValid: true,
+      title: "",
+      imageUrl: "",
+      categories: [],
+      description: "",
+      titleRules: [
+        title => !!title || "Title is required",
+        title => title.length < 20 || "Title must have less than 20 characters"
+      ],
+      imageRules: [image => !!image || "Image is required"],
+      categoriesRules: [
+        categories =>
+          categories.length >= 1 || "At least one category is required"
+      ],
+      descRules: [
+        desc => !!desc || "Description is required",
+        desc =>
+          desc.length < 200 || "Description must have less than 200 characters"
+      ]
+    };
+  },
   computed: {
-    ...mapGetters(["user", "userFavorites", "userPosts"])
+    ...mapGetters(["user", "userFavorites", "userPosts", "loading"])
   },
   methods: {
     goToPost(postId) {
@@ -196,6 +317,18 @@ export default {
       this.$store.dispatch("getUserPosts", {
         userId: this.user._id
       });
+    },
+    handleupdateUserPost() {
+      if (this.$refs.form.validate()) {
+        this.$store.dispatch("updateUserPost", {
+          title: this.title,
+          imageUrl: this.imageUrl,
+          categories: this.categories,
+          description: this.description,
+          creatorId: this.user._id
+        });
+      }
+      this.$router.push("/");
     }
   },
   created() {
