@@ -1,3 +1,5 @@
-## vue-share
+## vue-photo-share
 
-    Pinterest clone application
+    Pinterest clone sample application
+
+DB: Using MLAB
