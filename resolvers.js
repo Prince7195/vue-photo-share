@@ -78,6 +78,10 @@ module.exports = {
         return searchResult;
       }
     },
+    getUserPosts: async (_, { userId }, { Post }) => {
+      const post = await Post.find({ createdBy: userId });
+      return post;
+    },
   },
   Mutation: {
     signupUser: async (_, { username, email, password }, context) => {
